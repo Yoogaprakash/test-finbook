@@ -271,6 +271,7 @@ body {
     font-size: 2rem;
     color: rgba(255, 255, 255, 1);
     font-weight: 500;
+    display: none;
 }
 
 /* Override green/red for overall card specifically if needed, but white text is better on dark bg */
@@ -1040,4 +1041,5 @@ body {
         opacity: 0;
         transform: translateX(20px);
     }
+
 }
