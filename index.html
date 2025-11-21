@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finbook - Smart Ledger</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Make firebase functions globally available for the app
+        window.firebaseModules = {
+            initializeApp,
+            getDatabase, ref, set, push, onValue, update, remove, get,
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
+        };
+    </script>
+
+    <!-- Report Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Login View -->
+        <section id="login-view" class="view active">
+            <div class="login-container">
+                <div class="login-card glass-effect">
+                    <div class="brand-logo">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <h1>Finbook</h1>
+                    </div>
+                    <p class="subtitle">Manage your finances smartly</p>
+
+                    <form id="login-form">
+                        <div class="input-group">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="text" id="login-email" placeholder="Email or Username" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="login-password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Login <i class="fa-solid fa-arrow-right"></i></button>
+                    </form>
+                    <p id="login-error" class="error-msg"></p>
+
+                    <div class="auth-link">
+                        Don't have an account? <a href="#" id="go-to-signup">Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sign Up View -->
+        <section id="signup-view" class="view hidden">
+            <div class="login-container">
+                <div class="login-card glass-effect">
+                    <div class="brand-logo">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <h1>Finbook</h1>
+                    </div>
+                    <p class="subtitle">Create your account</p>
+
+                    <form id="signup-form">
+                        <div class="input-group">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" id="signup-email" placeholder="Email Address" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="signup-password" placeholder="Password" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Sign Up <i class="fa-solid fa-user-plus"></i></button>
+                    </form>
+                    <p id="signup-error" class="error-msg"></p>
+
+                    <div class="auth-link">
+                        Already have an account? <a href="#" id="go-to-login">Login</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view hidden">
+            <header class="top-bar glass-effect">
+                <div class="brand">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <span>Finbook</span>
+                </div>
+                <button id="logout-btn" class="btn-icon"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </header>
+
+            <div class="main-content">
+                <!-- Overall Balance -->
+                <div class="overall-balance-card glass-effect">
+                    <h3>Overall Net Balance</h3>
+                    <h1 id="overall-balance">₹ 0</h1>
+                    <p id="overall-balance-label">You are safe</p>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card give glass-effect">
+                        <h3>Total Expense</h3>
+                        <p class="amount red">₹ <span id="total-give">0</span></p>
+                        <i class="fa-solid fa-arrow-trend-down icon-bg"></i>
+                    </div>
+                    <div class="card get glass-effect">
+                        <h3>Total Income</h3>
+                        <p class="amount green">₹ <span id="total-get">0</span></p>
+                        <i class="fa-solid fa-arrow-trend-up icon-bg"></i>
+                    </div>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="action-bar glass-effect">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="customer-search" placeholder="Search Customer">
+                    </div>
+                    <button id="add-customer-btn" class="btn-primary"><i class="fa-solid fa-plus"></i> Add</button>
+                </div>
+
+                <!-- Selection Controls -->
+                <div class="selection-controls glass-effect">
+                    <div class="select-options">
+                        <label><input type="radio" name="select-mode" value="all" checked> All</label>
+                        <label><input type="radio" name="select-mode" value="selected"> Selected</label>
+                        <label><input type="radio" name="select-mode" value="except"> Except</label>
+                    </div>
+                    <button id="global-report-btn" class="btn-secondary"><i class="fa-solid fa-file-export"></i> Balance
+                        Report</button>
+                </div>
+
+                <!-- Customer List -->
+                <div class="customer-list glass-effect" id="customer-list">
+                    <!-- Customers will be populated here -->
+                    <div class="empty-state">
+                        <i class="fa-solid fa-users-slash"></i>
+                        <p>No customers found</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Dashboard View -->
+        <section id="admin-view" class="view hidden">
+            <header class="top-bar glass-effect">
+                <div class="brand">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Finbook Admin</span>
+                </div>
+                <button id="admin-logout-btn" class="btn-icon"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </header>
+
+            <div class="main-content">
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p class="val" id="admin-total-users">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Customers Managed</h3>
+                        <p class="val" id="admin-total-customers">0</p>
+                    </div>
+                </div>
+
+                <div class="user-table-container">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Email</th>
+                                <th>Customers</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-list">
+                            <!-- User list -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Customer Detail View -->
+        <section id="customer-view" class="view hidden">
+            <header class="top-bar glass-effect">
+                <button id="back-to-dashboard" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="customer-profile">
+                    <div class="avatar" id="customer-avatar">AB</div>
+                    <div class="info">
+                        <h2 id="customer-name-header">Customer Name</h2>
+                        <p id="customer-phone-header">+91 9876543210</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="report-btn" class="btn-secondary"><i class="fa-solid fa-file-arrow-down"></i>
+                        Report</button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <!-- Customer Balance Summary -->
+                <div class="balance-summary glass-effect">
+                    <p>Net Balance</p>
+                    <h1 id="customer-net-balance" class="amount">₹ 0</h1>
+                </div>
+
+                <!-- Transactions List -->
+                <div class="transactions-list glass-effect" id="transactions-list">
+                    <!-- Transactions will be populated here -->
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="bottom-actions glass-effect">
+                <button id="give-money-btn" class="btn-action red-btn"><i class="fa-solid fa-minus"></i> Add
+                    Expense</button>
+                <button id="got-money-btn" class="btn-action green-btn"><i class="fa-solid fa-plus"></i> Add
+                    Income</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+
+        <!-- Add Customer Modal -->
+        <div id="add-customer-modal" class="modal glass-effect hidden">
+            <div class="modal-header">
+                <h3 id="customer-modal-title">Add New Customer</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="add-customer-form">
+                <div class="input-group">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="new-customer-name" placeholder="Customer Name" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="new-customer-phone" placeholder="Phone Number" required>
+                </div>
+                <input type="hidden" id="customer-id-edit">
+                <button type="submit" class="btn-primary" id="save-customer-btn">Save Customer</button>
+            </form>
+        </div>
+
+        <!-- Add Transaction Modal -->
+        <div id="transaction-modal" class="modal glass-effect hidden">
+            <div class="modal-header">
+                <h3 id="transaction-modal-title">Add Transaction</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="transaction-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <input type="number" id="transaction-amount" placeholder="Amount" required min="1" step="any">
+                </div>
+                <div class="input-group">
+                    <i class="fa-regular fa-note-sticky"></i>
+                    <input type="text" id="transaction-note" placeholder="Description (Optional)">
+                </div>
+                <div class="input-group">
+                    <i class="fa-regular fa-calendar"></i>
+                    <input type="date" id="transaction-date" required>
+                </div>
+                <input type="hidden" id="transaction-type">
+                <input type="hidden" id="transaction-id">
+                <button type="submit" class="btn-primary" id="save-transaction-btn">Save</button>
+            </form>
+        </div>
+
+        <!-- Report Modal -->
+        <div id="report-modal" class="modal glass-effect hidden">
+            <div class="modal-header">
+                <h3>Generate Report</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="report-options">
+                <div class="date-range">
+                    <label>From:</label>
+                    <input type="date" id="report-start-date">
+                </div>
+                <div class="date-range">
+                    <label>To:</label>
+                    <input type="date" id="report-end-date">
+                </div>
+                <div class="export-buttons">
+                    <button id="export-pdf" class="btn-secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    <button id="export-excel" class="btn-secondary"><i class="fa-solid fa-file-excel"></i>
+                        Excel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script type="module" src="firebase-service.js?v=1.1"></script>
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
