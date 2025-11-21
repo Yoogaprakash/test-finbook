@@ -421,8 +421,8 @@ body {
 }
 
 .avatar {
-    width: 45px;
-    height: 45px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
@@ -501,11 +501,13 @@ body {
 
 .balance-summary {
     text-align: center;
-    padding: 30px;
+    padding: 10px;
     margin-bottom: 20px;
     background: white;
 }
-
+#customer-name-header{
+     font-size: 1rem;
+}
 .balance-summary p {
     color: var(--text-muted);
     margin-bottom: 5px;
@@ -535,7 +537,7 @@ body {
 }
 
 .t-note {
-    font-size: 1.5rem;
+    font-size: 1rem;
     color: var(--text-color);
 }
 
@@ -544,7 +546,7 @@ body {
 }
 
 .t-type {
-    font-size: 1.5rem;
+    font-size: 0.7rem;
     padding: 2px 6px;
     border-radius: 4px;
     margin-left: 8px;
@@ -1043,5 +1045,6 @@ body {
     }
 
 }
+
 
 
