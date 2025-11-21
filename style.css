@@ -102,7 +102,7 @@ body {
     background: transparent;
     border: none;
     color: var(--text-color);
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
@@ -150,7 +150,7 @@ body {
 }
 
 .brand-logo h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-color);
     margin-top: 10px;
 }
@@ -180,7 +180,7 @@ body {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     color: var(--text-color);
-    font-size: 2rem;
+    font-size: 1.5rem;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -194,13 +194,13 @@ body {
 .error-msg {
     color: var(--danger-color);
     margin-top: 15px;
-    font-size: 2rem;
+    font-size: 1.5rem;
     min-height: 20px;
 }
 
 .auth-link {
     margin-top: 20px;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-muted);
 }
 
@@ -233,7 +233,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
 }
@@ -257,7 +257,7 @@ body {
 
 .overall-balance-card h3 {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 10px;
 }
 
@@ -268,7 +268,7 @@ body {
 }
 
 .overall-balance-card p {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: rgba(255, 255, 255, 1);
     font-weight: 500;
     display: none;
@@ -301,13 +301,13 @@ body {
 }
 
 .card h3 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-muted);
     margin-bottom: 5px;
 }
 
 .card .amount {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
 }
 
@@ -373,7 +373,7 @@ body {
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-color);
 }
 
@@ -430,12 +430,12 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 2rem;
+    font-size: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .details h4 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 2px;
     color: var(--text-color);
 }
@@ -535,7 +535,7 @@ body {
 }
 
 .t-note {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-color);
 }
 
@@ -653,7 +653,7 @@ body {
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
@@ -671,7 +671,7 @@ body {
 
 .date-range label {
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .date-range input {
@@ -714,12 +714,12 @@ body {
 
 .stat-card h3 {
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 5px;
 }
 
 .stat-card .val {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
 }
@@ -747,7 +747,7 @@ body {
     background: #f9fafb;
     color: var(--text-muted);
     font-weight: 600;
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .user-table tr:last-child td {
@@ -848,7 +848,7 @@ body {
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
@@ -866,7 +866,7 @@ body {
 
 .date-range label {
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .date-range input {
@@ -909,12 +909,12 @@ body {
 
 .stat-card h3 {
     color: var(--text-muted);
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 5px;
 }
 
 .stat-card .val {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
 }
@@ -942,7 +942,7 @@ body {
     background: #f9fafb;
     color: var(--text-muted);
     font-weight: 600;
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .user-table tr:last-child td {
@@ -1003,7 +1003,7 @@ body {
 }
 
 .notification-toast i {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .notification-toast.error i {
@@ -1015,7 +1015,7 @@ body {
 }
 
 .notification-toast p {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--text-color);
     margin: 0;
 }
@@ -1043,3 +1043,4 @@ body {
     }
 
 }
+
