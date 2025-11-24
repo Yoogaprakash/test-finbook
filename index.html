@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finbook - Smart Ledger</title>
+    <link rel="icon" type="image/svg+xml" href="clipboard2-data.svg?v=2">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +65,7 @@
                     <p id="login-error" class="error-msg"></p>
 
                     <div class="auth-link">
-                        Don't have an account? <a href="#" id="go-to-signup">Sign Up</a>
+                        Don't have an account? </br><a href="#" id="go-to-signup">Sign Up</a>
                     </div>
                 </div>
             </div>
@@ -309,6 +310,10 @@
                 <div class="date-range">
                     <label>To:</label>
                     <input type="date" id="report-end-date">
+                </div>
+                <div class="date-range">
+                    <label>Description:</label>
+                    <input type="text" id="report-description" placeholder="Filter by description">
                 </div>
                 <div class="export-buttons">
                     <button id="export-pdf" class="btn-secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button>

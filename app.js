@@ -86,6 +86,7 @@ const transactionModalTitle = document.getElementById('transaction-modal-title')
 // Report Form
 const reportStartDateInput = document.getElementById('report-start-date');
 const reportEndDateInput = document.getElementById('report-end-date');
+const reportDescriptionInput = document.getElementById('report-description');
 const exportPdfBtn = document.getElementById('export-pdf');
 const exportExcelBtn = document.getElementById('export-excel');
 
@@ -661,6 +662,7 @@ function renderAdminUserList(users) {
 function openReportModal(isGlobal) {
     reportStartDateInput.value = '';
     reportEndDateInput.value = '';
+    reportDescriptionInput.value = '';
 
     // Store context for generation
     reportModal.dataset.isGlobal = isGlobal;
@@ -672,16 +674,17 @@ function generateReport(format) {
     const isGlobal = reportModal.dataset.isGlobal === 'true';
     const startDate = reportStartDateInput.value ? new Date(reportStartDateInput.value) : null;
     const endDate = reportEndDateInput.value ? new Date(reportEndDateInput.value) : null;
+    const descriptionFilter = reportDescriptionInput.value.toLowerCase().trim();
 
     if (isGlobal) {
-        generateGlobalReport(format, startDate, endDate);
+        generateGlobalReport(format, startDate, endDate, descriptionFilter);
     } else {
-        generateCustomerReport(format, startDate, endDate);
+        generateCustomerReport(format, startDate, endDate, descriptionFilter);
     }
     closeModal();
 }
 
-function generateCustomerReport(format, startDate, endDate) {
+function generateCustomerReport(format, startDate, endDate, descriptionFilter) {
     const customer = customers.find(c => c.id === currentCustomerId);
     if (!customer) return;
 
@@ -690,6 +693,7 @@ function generateCustomerReport(format, startDate, endDate) {
         const tDate = new Date(t.date);
         if (startDate && tDate < startDate) return false;
         if (endDate && tDate > endDate) return false;
+        if (descriptionFilter && !t.note.toLowerCase().includes(descriptionFilter)) return false;
         return true;
     });
 
@@ -722,11 +726,14 @@ function generateCustomerReport(format, startDate, endDate) {
         if (startDate && endDate) {
             doc.text(`Period: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 14, 29);
         }
+        if (descriptionFilter) {
+            doc.text(`Filter: ${descriptionFilter}`, 14, startDate && endDate ? 36 : 29);
+        }
 
         doc.autoTable({
             head: [['Date', 'Description', 'Type', 'Amount']],
             body: data,
-            startY: 35,
+            startY: descriptionFilter ? (startDate && endDate ? 42 : 35) : (startDate && endDate ? 35 : 29),
         });
         doc.save(`${customer.name}_Report.pdf`);
     } else {
@@ -742,7 +749,7 @@ function generateCustomerReport(format, startDate, endDate) {
     }
 }
 
-function generateGlobalReport(format, startDate, endDate) {
+function generateGlobalReport(format, startDate, endDate, descriptionFilter) {
     // Filter customers based on selection mode
     let reportCustomers = [];
     if (selectionMode === 'all') {
@@ -769,6 +776,7 @@ function generateGlobalReport(format, startDate, endDate) {
                 const tDate = new Date(t.date);
                 if (startDate && tDate < startDate) return;
                 if (endDate && tDate > endDate) return;
+                if (descriptionFilter && !t.note.toLowerCase().includes(descriptionFilter)) return;
 
                 if (t.type === 'INCOME') cIncome += t.amount;
                 else cExpense += t.amount;
@@ -800,10 +808,14 @@ function generateGlobalReport(format, startDate, endDate) {
             doc.text(`Period: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 14, 22);
         }
 
+        if (descriptionFilter) {
+            doc.text(`Filter: ${descriptionFilter}`, 14, startDate && endDate ? 29 : 22);
+        }
+
         doc.autoTable({
             head: [['Customer', 'Phone', 'Total Income', 'Total Expense', 'Net Balance']],
             body: data,
-            startY: 30,
+            startY: descriptionFilter ? (startDate && endDate ? 36 : 29) : (startDate && endDate ? 30 : 22),
         });
         doc.save("Global_Balance_Report.pdf");
     } else {
