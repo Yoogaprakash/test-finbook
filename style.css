@@ -516,7 +516,7 @@ body {
 .transactions-list {
     padding-bottom: 20px;
     background: white;
-    height: 750px;
+    height: 700px;
     overflow-y: auto;
 }
 
@@ -1047,6 +1047,7 @@ body {
     }
 
 }
+
 
 
 
