@@ -271,7 +271,7 @@ body {
     font-size: 1.5rem;
     color: rgba(255, 255, 255, 1);
     font-weight: 500;
-    
+
 }
 
 /* Override green/red for overall card specifically if needed, but white text is better on dark bg */
@@ -505,9 +505,11 @@ body {
     margin-bottom: 20px;
     background: white;
 }
-#customer-name-header{
-     font-size: 1rem;
+
+#customer-name-header {
+    font-size: 1rem;
 }
+
 .balance-summary p {
     color: var(--text-muted);
     margin-bottom: 5px;
@@ -1047,9 +1049,3 @@ body {
     }
 
 }
-
-
-
-
-
-

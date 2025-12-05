@@ -6,6 +6,7 @@ let currentCustomerId = null;
 let customers = [];
 let transactions = [];
 let isAdmin = false;
+let currentView = 'login'; // Track current view
 
 // DOM Elements
 const views = {
@@ -104,17 +105,21 @@ function init() {
         if (user) {
             currentUser = user;
             isAdmin = false;
-            loadDashboard();
+            loadDashboard('replace'); // Replace login history with dashboard
         } else {
             currentUser = null;
             if (!isAdmin) {
-                switchView('login');
+                switchView('login', 'replace'); // Replace current view with login
             }
         }
     });
 
     setupEventListeners();
+
+    // Initial State Replace
+    history.replaceState({ view: 'login', modal: null }, '', '#login');
 }
+
 
 function setupEventListeners() {
     // Auth Navigation
@@ -140,7 +145,7 @@ function setupEventListeners() {
         if (email === 'Admin123' && password === 'Admin@321') {
             isAdmin = true;
             currentUser = { uid: 'admin', email: 'admin@finbook.com' }; // Mock admin user
-            loadAdminDashboard();
+            loadAdminDashboard('replace');
             showNotification("Welcome back, Admin!", "success");
             return;
         }
@@ -186,7 +191,7 @@ function setupEventListeners() {
     adminLogoutBtn.addEventListener('click', () => {
         isAdmin = false;
         currentUser = null;
-        switchView('login');
+        switchView('login', 'replace');
         showNotification("Logged out successfully.", "success");
     });
 
@@ -271,8 +276,8 @@ function setupEventListeners() {
 
     // Customer View Actions
     backToDashboardBtn.addEventListener('click', () => {
-        switchView('dashboard');
         currentCustomerId = null;
+        switchView('dashboard');
     });
 
     giveMoneyBtn.addEventListener('click', () => {
@@ -307,9 +312,59 @@ function setupEventListeners() {
 
 // --- View Management ---
 
-function switchView(viewName) {
+window.addEventListener('popstate', (event) => {
+    const state = event.state;
+    if (!state) return;
+
+    // Restore Context
+    if (state.customerId) currentCustomerId = state.customerId;
+    if (state.isAdmin !== undefined) isAdmin = state.isAdmin;
+
+    // Restore View
+    if (state.view) {
+        // Auth Guard
+        const protectedViews = ['dashboard', 'customer', 'admin'];
+        if (protectedViews.includes(state.view) && !currentUser) {
+            switchView('login', false);
+            return;
+        }
+
+        switchView(state.view, false); // Don't push state on pop
+    }
+
+    // Restore Modals
+    if (state.modal) {
+        const modal = document.getElementById(state.modal);
+        if (modal) {
+            modalOverlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+        }
+    } else {
+        hideModalsUI();
+    }
+});
+
+function switchView(viewName, historyAction = 'push') {
+    // Backward compatibility for boolean args
+    if (historyAction === true) historyAction = 'push';
+    if (historyAction === false) historyAction = 'none';
+
     Object.values(views).forEach(el => el.classList.add('hidden'));
     views[viewName].classList.remove('hidden');
+    currentView = viewName;
+
+    const state = {
+        view: viewName,
+        customerId: currentCustomerId,
+        isAdmin: isAdmin,
+        modal: null
+    };
+
+    if (historyAction === 'push') {
+        history.pushState(state, '', `#${viewName}`);
+    } else if (historyAction === 'replace') {
+        history.replaceState(state, '', `#${viewName}`);
+    }
 
     if (viewName === 'dashboard') {
         loadCustomers();
@@ -325,8 +380,8 @@ function clearAuthForms() {
 
 // --- Dashboard Logic ---
 
-function loadDashboard() {
-    switchView('dashboard');
+function loadDashboard(historyAction = 'push') {
+    switchView('dashboard', historyAction);
     loadCustomers();
 }
 
@@ -627,8 +682,8 @@ window.deleteTransaction = async (id) => {
 
 // --- Admin Logic ---
 
-async function loadAdminDashboard() {
-    switchView('admin');
+async function loadAdminDashboard(historyAction = 'push') {
+    switchView('admin', historyAction);
     try {
         const users = await FirebaseService.getAllUsers();
         renderAdminUserList(users);
@@ -835,9 +890,27 @@ function generateGlobalReport(format, startDate, endDate, descriptionFilter) {
 function openModal(modal) {
     modalOverlay.classList.remove('hidden');
     modal.classList.remove('hidden');
+
+    // Push Modal State
+    history.pushState({
+        view: currentView,
+        customerId: currentCustomerId,
+        isAdmin: isAdmin,
+        modal: modal.id
+    }, '', `#${currentView}/${modal.id}`);
 }
 
 function closeModal() {
+    // Logic: Go back in history, which triggers popstate, which calls hideModalsUI
+    // Check if current state has a modal before backing to avoid accidental view navigation
+    if (history.state && history.state.modal) {
+        history.back();
+    } else {
+        hideModalsUI();
+    }
+}
+
+function hideModalsUI() {
     modalOverlay.classList.add('hidden');
     document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
 }
