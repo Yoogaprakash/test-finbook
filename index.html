@@ -118,7 +118,21 @@
             <div class="main-content">
                 <!-- Overall Balance -->
                 <div class="overall-balance-card glass-effect">
-                    <h3>Overall Net Balance</h3>
+                    <div class="balance-header">
+                        <h3>Overall Net Balance</h3>
+                        <div class="balance-filter">
+                            <select id="balance-filter-select">
+                                <option value="ALL">All Time</option>
+                                <option value="THIS_MONTH">This Month</option>
+                                <option value="CUSTOM">Custom Date</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="custom-date-imputs" class="custom-dates hidden">
+                        <input type="date" id="balance-start-date">
+                        <span>to</span>
+                        <input type="date" id="balance-end-date">
+                    </div>
                     <h1 id="overall-balance">₹ 0</h1>
                     <p id="overall-balance-label">You are safe</p>
                 </div>

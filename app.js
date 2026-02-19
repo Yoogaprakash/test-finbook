@@ -41,6 +41,10 @@ const totalGiveEl = document.getElementById('total-give');
 const totalGetEl = document.getElementById('total-get');
 const overallBalanceEl = document.getElementById('overall-balance');
 const overallBalanceLabelEl = document.getElementById('overall-balance-label');
+const balanceFilterSelect = document.getElementById('balance-filter-select');
+const customDateInputsDiv = document.getElementById('custom-date-imputs'); // Sic: id in html was custom-date-imputs
+const balanceStartDateInput = document.getElementById('balance-start-date');
+const balanceEndDateInput = document.getElementById('balance-end-date');
 const globalReportBtn = document.getElementById('global-report-btn');
 
 // Admin Dashboard
@@ -95,6 +99,9 @@ const exportExcelBtn = document.getElementById('export-excel');
 const selectModeRadios = document.querySelectorAll('input[name="select-mode"]');
 let selectionMode = 'all'; // 'all', 'selected', 'except'
 let selectedCustomerIds = new Set();
+let balanceFilterMode = 'ALL'; // ALL, THIS_MONTH, CUSTOM
+let customBalanceStartDate = null;
+let customBalanceEndDate = null;
 
 
 // --- Initialization ---
@@ -265,6 +272,30 @@ function setupEventListeners() {
         openReportModal(true); // true for global report
     });
 
+    // Balance Filter Events
+    balanceFilterSelect.addEventListener('change', (e) => {
+        balanceFilterMode = e.target.value;
+        if (balanceFilterMode === 'CUSTOM') {
+            customDateInputsDiv.classList.remove('hidden');
+        } else {
+            customDateInputsDiv.classList.add('hidden');
+            calculateTotals(); // Recalculate immediately for non-custom
+        }
+    });
+
+    const handleCustomDateChange = () => {
+        if (balanceStartDateInput.value && balanceEndDateInput.value) {
+            customBalanceStartDate = new Date(balanceStartDateInput.value);
+            customBalanceEndDate = new Date(balanceEndDateInput.value);
+            // set end date to end of day
+            customBalanceEndDate.setHours(23, 59, 59, 999);
+            calculateTotals();
+        }
+    };
+
+    balanceStartDateInput.addEventListener('change', handleCustomDateChange);
+    balanceEndDateInput.addEventListener('change', handleCustomDateChange);
+
     // Selection Mode
     selectModeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -398,21 +429,52 @@ function calculateTotals() {
     let totalGive = 0;
     let totalGet = 0;
 
+    // Dates for THIS_MONTH
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
     customers.forEach(c => {
         let cBalance = 0;
-        if (c.transactions) {
-            Object.values(c.transactions).forEach(t => {
-                const amount = parseFloat(t.amount) || 0;
-                if (t.type === 'INCOME') {
-                    cBalance += amount;
-                    totalGet += amount; // Add to global total income
-                } else {
-                    cBalance -= amount;
-                    totalGive += amount; // Add to global total expense
+        let cLog = c.transactions ? Object.values(c.transactions) : [];
+
+        // Calculate specific balance for Overall Net Balance based on filter
+        cLog.forEach(t => {
+            const tDate = new Date(t.date);
+            let includeInTotal = true;
+
+            if (balanceFilterMode === 'THIS_MONTH') {
+                if (tDate < startOfMonth || tDate > endOfMonth) includeInTotal = false;
+            } else if (balanceFilterMode === 'CUSTOM') {
+                if (customBalanceStartDate && customBalanceEndDate) {
+                    if (tDate < customBalanceStartDate || tDate > customBalanceEndDate) includeInTotal = false;
                 }
-            });
-        }
-        c.balance = cBalance; // Update local object
+            }
+            // else ALL - include everything
+
+            const amount = parseFloat(t.amount) || 0;
+            if (includeInTotal) {
+                if (t.type === 'INCOME') {
+                    totalGet += amount;
+                } else {
+                    totalGive += amount;
+                }
+            }
+        });
+
+        // Calculate customer's absolute total balance (independent of global filter for the list view usually)
+        // However, if we want the list view balances to also reflect the filter, we should use the same logic.
+        // For now, let's keep the customer list balance as "All Time" (Current Balance) as that's standard for ledgers.
+        // We only filter the "Overall Net Balance" and "Total Income/Expense" cards at the top.
+
+        // Re-calculating all-time balance for the customer list display
+        let allTimeBalance = 0;
+        cLog.forEach(t => {
+            const amount = parseFloat(t.amount) || 0;
+            if (t.type === 'INCOME') allTimeBalance += amount;
+            else allTimeBalance -= amount;
+        });
+        c.balance = allTimeBalance;
     });
 
     totalGiveEl.textContent = totalGive.toLocaleString('en-IN');
